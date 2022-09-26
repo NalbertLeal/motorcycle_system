@@ -1,0 +1,1 @@
+sudo rm -rf kafka/volume/data/ && sudo rm -rf mongo/volume/data/ && docker compose down && docker compose up

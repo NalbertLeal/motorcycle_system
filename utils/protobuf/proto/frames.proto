@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package frames;
+
+message FrameMessage {
+    message Frame {
+        int32 frame_number = 1;
+        repeated int32 shape = 2;
+        bytes frame = 3;
+    }
+
+    string processing_id = 1;
+    Frame frame = 2;
+}
+
+message Motorcycle {
+    message Frame {
+        int32 frame_number = 1;
+        repeated int32 shape = 2;
+        bytes frame = 3;
+    }
+
+    message BBox {
+        repeated int32 shape = 1;
+        bytes box = 2;
+    }
+
+    string processing_id = 1;
+    string motorcycle_id = 2;
+    Frame frame = 3;
+    BBox bbox = 4;
+
+}
+
+message Plate {
+    message Frame {
+        int32 frame_number = 1;
+        repeated int32 shape = 2;
+        bytes frame = 3;
+    }
+
+    message BBox {
+        repeated int32 shape = 1;
+        bytes box = 2;
+        string label = 3;
+    }
+
+    string processing_id = 1;
+    string plate_id = 2;
+    Frame frame = 3;
+    BBox bbox = 4;
+}
+
+message PlateText {
+    message Frame {
+        int32 frame_number = 1;
+        repeated int32 shape = 2;
+        bytes frame = 3;
+    }
+
+    message BBox {
+        repeated int32 shape = 1;
+        bytes box = 2;
+    }
+
+    string processing_id = 1;
+    string plate_id = 2;
+    Frame frame = 3;
+    BBox bbox = 4;
+    string plate_text = 5;
+}

@@ -1,0 +1,15 @@
+coloredlogs==15.0.1
+dataclasses==0.6
+flatbuffers==2.0
+humanfriendly==10.0
+kafka-python==2.0.2
+mpmath==1.2.1
+numpy==1.23.1
+onnxruntime-gpu==1.12.0
+opencv-python-headless==4.6.0.66
+packaging==21.3
+protobuf==3.19.0
+pymongo==4.1.1
+pyparsing==3.0.9
+sympy==1.11.1
+typing_extensions==4.1.1

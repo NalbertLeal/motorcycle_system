@@ -1,0 +1,4 @@
+kafka-python==2.0.2
+numpy==1.23.1
+opencv-python==4.6.0.66
+protobuf==3.19.0

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package frames;
+
+message FrameMessage {
+    message Frame {
+        int32 frame_number = 1;
+        repeated int32 shape = 2;
+        bytes frame = 3;
+    }
+
+    string processing_id = 1;
+    Frame frame = 2;
+}
