@@ -100,12 +100,13 @@ class CharactersSegmentation():
 
     def sort_char_position(self, char_position):
         if(len(char_position) != 0):
-            sorted_by_y_axis = sorted(char_position, key=lambda x: x[1])
-            row1 = sorted_by_y_axis[:3]
-            row2 = sorted_by_y_axis[3:]
-            row1_sorted = sorted(row1, key=lambda x: x[0])
-            row2_sorted = sorted(row2, key=lambda x: x[0])
-            return [*row1_sorted, *row2_sorted]
+            return sorted(char_position, key=lambda x: x[0])
+            # sorted_by_y_axis = sorted(char_position, key=lambda x: x[1])
+            # row1 = sorted_by_y_axis[:3]
+            # row2 = sorted_by_y_axis[3:]
+            # row1_sorted = sorted(row1, key=lambda x: x[0])
+            # row2_sorted = sorted(row2, key=lambda x: x[0])
+            # return [*row1_sorted, *row2_sorted]
 
     def run(self, img: np.ndarray, inpWidth: int=224,\
         inpHeight: int=64) -> Tuple[Tuple[int]]:
@@ -122,7 +123,7 @@ class CharactersSegmentation():
             confidences
         )
 
-        # sorted_char_position = self.sort_char_position(char_position) # MOTO
-        sorted_char_position = sorted(char_position, key=lambda x: x[0]) # CARRO
+        sorted_char_position = self.sort_char_position(char_position) # MOTO
+        # sorted_char_position = sorted(char_position, key=lambda x: x[0]) # CARRO
 
         return sorted_char_position, confidences_seg

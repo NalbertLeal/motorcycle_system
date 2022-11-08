@@ -167,7 +167,7 @@ class CharactersRecognition():
     
     return predicted_number, np.around(confidence_result,3)
 
-  def recognition(self, plate_img, plate_class, char_positions):
+  def recognition(self, plate_img, plate_class, char_positions, is_fst_half=True):
     plate_text = []
     plate_confidence = []
 
@@ -176,29 +176,45 @@ class CharactersRecognition():
     text = []                                   # Text of each plate individually
     confidence = []                             # Confidente level of each plate individually
 
-    if len(char_positions) == 7:                         # number of detected chars is seven
+    if len(char_positions) == 3 or len(char_positions) == 4:                         # number of detected chars is seven
       pos = 0
       for rec in char_positions:                       # going over each character 
         rec = [max(0,i) for i in rec]       # ensuring that there is no negative value.
         char_image = plate_img[rec[1]:(rec[1]+rec[3]),rec[0]:(rec[0]+rec[2])]
         if plate_class == 'mercosul': # classe 'nova' no sistema lpr
-          if pos in [0,1,2,4]:            # sequence of characters in the new class that are letters
+          if is_fst_half or pos in [1]:
             predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
             text.append(predicted_letter)
             confidence.append(confidence_result)
-          elif pos in [3,5,6]:
+          else:
             predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
             text.append(predicted_number)
             confidence.append(confidence_result)
+          # if pos in [0,1,2,4]:            # sequence of characters in the new class that are letters
+          #   predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
+          #   text.append(predicted_letter)
+          #   confidence.append(confidence_result)
+          # elif pos in [3,5,6]:
+          #   predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
+          #   text.append(predicted_number)
+          #   confidence.append(confidence_result)
         else:                               # old class (cinza or vermelha)
-          if pos in [0,1,2]:              # sequence of characters in the old class that are letters
+          if is_fst_half:
             predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
             text.append(predicted_letter)
             confidence.append(confidence_result)
-          elif pos in [3,4,5,6]:
+          else:
             predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
             text.append(predicted_number)
             confidence.append(confidence_result)
+          # if pos in [0,1,2]:              # sequence of characters in the old class that are letters
+          #   predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
+          #   text.append(predicted_letter)
+          #   confidence.append(confidence_result)
+          # elif pos in [3,4,5,6]:
+          #   predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
+          #   text.append(predicted_number)
+          #   confidence.append(confidence_result)
         pos+=1
 
     else:                                           # number of chars is not seven
