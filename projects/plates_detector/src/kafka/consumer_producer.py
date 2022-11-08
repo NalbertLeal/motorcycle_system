@@ -4,7 +4,7 @@ from typing import Tuple
 import cv2
 import numpy as np
 
-from image_processing_lib import onnx, image_matrix
+from image_processing_lib import onnx, image_matrix, image_formats
 from kafka_lib import producer as kafka_lib_producer
 from onnx_lib import model
 from mongodb_lib import connection, collection, change
@@ -41,7 +41,8 @@ def _serialize_image(data) -> bytes:
 
     message.frame.frame_number = frame_number
     message.frame.shape.extend(frame.shape)
-    message.frame.frame = frame.tobytes()
+    png_img = image_formats.matrix_to_png(frame)
+    message.frame.frame = png_img
 
     message.bbox.shape.extend(box.shape)
     message.bbox.box = box.tobytes()
@@ -57,7 +58,8 @@ def _deserialize_image(data) -> Tuple[bytes, str, int]:
     message = frames_pb.Motorcycle()
     message.ParseFromString(data)
 
-    frame = np.frombuffer(message.frame.frame, dtype=np.uint8)\
+    matrix_img = image_formats.png_to_matrix(message.frame.frame)
+    frame = np.frombuffer(matrix_img, dtype=np.uint8)\
         .reshape(message.frame.shape)
     bbox = np.frombuffer(message.bbox.box, dtype=np.uint64)\
         .reshape(message.bbox.shape)
