@@ -1,4 +1,7 @@
+#!/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port 8080
+
 import sys
+sys.path.append('../../libs/image_processing_lib')
 sys.path.append('../../libs/kafka_lib')
 sys.path.append('../../libs/mongodb_lib')
 sys.path.append('../../utils/protobuf/py/')
