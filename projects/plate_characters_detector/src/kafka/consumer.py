@@ -97,6 +97,8 @@ def receive_image(data: bytes):
     
     plate_1, positions1, seg_conf1, plate_2, positions2, seg_conf2 = plate_img_segmentation(motorcycle_frame)
     
+    if positions1 == [] or positions2 == []:
+        return
     [plate_1_text, _] = chars_recognition(plate_1, label, positions1, True)
     [plate_2_text, _] = chars_recognition(plate_2, label, positions2, False)
 
