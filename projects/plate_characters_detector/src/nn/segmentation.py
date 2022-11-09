@@ -123,7 +123,11 @@ class CharactersSegmentation():
             confidences
         )
 
+        if len(char_position) == 0:
+            return char_position, confidences_seg
         sorted_char_position = self.sort_char_position(char_position) # MOTO
+        if sorted_char_position is None:
+            return [], confidences_seg
         # sorted_char_position = sorted(char_position, key=lambda x: x[0]) # CARRO
 
         return sorted_char_position, confidences_seg
