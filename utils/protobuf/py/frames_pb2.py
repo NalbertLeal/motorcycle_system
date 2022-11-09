@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='frames.proto',
   package='frames',
   syntax='proto3',
-  serialized_pb=_b('\n\x0c\x66rames.proto\x12\x06\x66rames\"\x8d\x01\n\x0c\x46rameMessage\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12)\n\x05\x66rame\x18\x02 \x01(\x0b\x32\x1a.frames.FrameMessage.Frame\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\"\xeb\x01\n\nMotorcycle\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12\x15\n\rmotorcycle_id\x18\x02 \x01(\t\x12\'\n\x05\x66rame\x18\x03 \x01(\x0b\x32\x18.frames.Motorcycle.Frame\x12%\n\x04\x62\x62ox\x18\x04 \x01(\x0b\x32\x17.frames.Motorcycle.BBox\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\x1a\"\n\x04\x42\x42ox\x12\r\n\x05shape\x18\x01 \x03(\x05\x12\x0b\n\x03\x62ox\x18\x02 \x01(\x0c\"\xe6\x01\n\x05Plate\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12\x10\n\x08plate_id\x18\x02 \x01(\t\x12\"\n\x05\x66rame\x18\x03 \x01(\x0b\x32\x13.frames.Plate.Frame\x12 \n\x04\x62\x62ox\x18\x04 \x01(\x0b\x32\x12.frames.Plate.BBox\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\x1a\x31\n\x04\x42\x42ox\x12\r\n\x05shape\x18\x01 \x03(\x05\x12\x0b\n\x03\x62ox\x18\x02 \x01(\x0c\x12\r\n\x05label\x18\x03 \x01(\t\"\xf7\x01\n\tPlateText\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12\x10\n\x08plate_id\x18\x02 \x01(\t\x12&\n\x05\x66rame\x18\x03 \x01(\x0b\x32\x17.frames.PlateText.Frame\x12$\n\x04\x62\x62ox\x18\x04 \x01(\x0b\x32\x16.frames.PlateText.BBox\x12\x12\n\nplate_text\x18\x05 \x01(\t\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\x1a\"\n\x04\x42\x42ox\x12\r\n\x05shape\x18\x01 \x03(\x05\x12\x0b\n\x03\x62ox\x18\x02 \x01(\x0c\x62\x06proto3')
+  serialized_pb=_b('\n\x0c\x66rames.proto\x12\x06\x66rames\"\x8d\x01\n\x0c\x46rameMessage\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12)\n\x05\x66rame\x18\x02 \x01(\x0b\x32\x1a.frames.FrameMessage.Frame\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\"\xeb\x01\n\nMotorcycle\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12\x15\n\rmotorcycle_id\x18\x02 \x01(\t\x12\'\n\x05\x66rame\x18\x03 \x01(\x0b\x32\x18.frames.Motorcycle.Frame\x12%\n\x04\x62\x62ox\x18\x04 \x01(\x0b\x32\x17.frames.Motorcycle.BBox\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\x1a\"\n\x04\x42\x42ox\x12\r\n\x05shape\x18\x01 \x03(\x05\x12\x0b\n\x03\x62ox\x18\x02 \x01(\x0c\"\xe6\x01\n\x05Plate\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12\x10\n\x08plate_id\x18\x02 \x01(\t\x12\"\n\x05\x66rame\x18\x03 \x01(\x0b\x32\x13.frames.Plate.Frame\x12 \n\x04\x62\x62ox\x18\x04 \x01(\x0b\x32\x12.frames.Plate.BBox\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\x1a\x31\n\x04\x42\x42ox\x12\r\n\x05shape\x18\x01 \x03(\x05\x12\x0b\n\x03\x62ox\x18\x02 \x01(\x0c\x12\r\n\x05label\x18\x03 \x01(\t\"\x86\x02\n\tPlateText\x12\x15\n\rprocessing_id\x18\x01 \x01(\t\x12\x10\n\x08plate_id\x18\x02 \x01(\t\x12&\n\x05\x66rame\x18\x03 \x01(\x0b\x32\x17.frames.PlateText.Frame\x12$\n\x04\x62\x62ox\x18\x04 \x01(\x0b\x32\x16.frames.PlateText.BBox\x1a;\n\x05\x46rame\x12\x14\n\x0c\x66rame_number\x18\x01 \x01(\x05\x12\r\n\x05shape\x18\x02 \x03(\x05\x12\r\n\x05\x66rame\x18\x03 \x01(\x0c\x1a\x45\n\x04\x42\x42ox\x12\r\n\x05shape\x18\x01 \x03(\x05\x12\x0b\n\x03\x62ox\x18\x02 \x01(\x0c\x12\r\n\x05label\x18\x03 \x01(\t\x12\x12\n\nplate_text\x18\x04 \x01(\tb\x06proto3')
 )
 
 
@@ -445,6 +445,20 @@ _PLATETEXT_BBOX = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='label', full_name='frames.PlateText.BBox.label', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='plate_text', full_name='frames.PlateText.BBox.plate_text', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -457,8 +471,8 @@ _PLATETEXT_BBOX = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=370,
-  serialized_end=404,
+  serialized_start=833,
+  serialized_end=902,
 )
 
 _PLATETEXT = _descriptor.Descriptor(
@@ -496,13 +510,6 @@ _PLATETEXT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-    _descriptor.FieldDescriptor(
-      name='plate_text', full_name='frames.PlateText.plate_text', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -516,7 +523,7 @@ _PLATETEXT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=640,
-  serialized_end=887,
+  serialized_end=902,
 )
 
 _FRAMEMESSAGE_FRAME.containing_type = _FRAMEMESSAGE

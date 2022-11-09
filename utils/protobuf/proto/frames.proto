@@ -61,11 +61,12 @@ message PlateText {
     message BBox {
         repeated int32 shape = 1;
         bytes box = 2;
+        string label = 3;
+        string plate_text = 4;
     }
 
     string processing_id = 1;
     string plate_id = 2;
     Frame frame = 3;
     BBox bbox = 4;
-    string plate_text = 5;
 }
