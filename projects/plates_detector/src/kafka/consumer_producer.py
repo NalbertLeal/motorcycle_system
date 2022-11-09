@@ -12,6 +12,8 @@ import frames_pb2 as frames_pb
 
 from src.database import motorcycle_plate
 
+YOLOv5_IMAGE_HEIGHT = 640
+YOLOv5_IMAGE_WIDTH = 640
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
 KAFKA_PRODUCER_TOPIC = os.environ.get('KAFKA_PRODUCER_TOPIC', default='plates')
 KAFKA_PRODUCER_PARTITIONS = int(os.environ.get('KAFKA_PRODUCER_PARTITIONS', default=1))
@@ -20,7 +22,7 @@ MONGO_PORT = os.environ.get('MONGO_PORT', default='27017')
 MONGO_USER = os.environ.get('MONGO_USER', default='root')
 MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
 
-yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m.onnx', 'cpu')
+yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m_v4.onnx', 'cpu')
 kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_HOST],
     [KAFKA_PRODUCER_TOPIC],
@@ -122,7 +124,8 @@ def consume_frames(data):
         
     # crop motorcycle from the frame
     [x, y, w, h] = motor_bbox
-    motorcycle_frame = frame[y:h, x:w]
+    resized_frame = image_matrix.resizeAndPad(frame)
+    motorcycle_frame = resized_frame[y:h, x:w]
 
     # inference
     onnx_frame = onnx.preprocess_image_to_onnx(motorcycle_frame, True)
