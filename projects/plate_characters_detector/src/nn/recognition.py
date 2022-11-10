@@ -176,7 +176,7 @@ class CharactersRecognition():
     text = []                                   # Text of each plate individually
     confidence = []                             # Confidente level of each plate individually
 
-    if len(char_positions) == 3 or len(char_positions) == 4:                         # number of detected chars is seven
+    if len(char_positions) == 3 or len(char_positions) == 4:                         # number of detected chars is seven    
       pos = 0
       for rec in char_positions:                       # going over each character 
         rec = [max(0,i) for i in rec]       # ensuring that there is no negative value.

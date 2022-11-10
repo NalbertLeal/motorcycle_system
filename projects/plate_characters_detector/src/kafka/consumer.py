@@ -86,7 +86,9 @@ def chars_recognition(plate_img, label, positions, is_fst_half):
         positions,
         is_fst_half
     )
-    return plate_text
+    if len(plate_text) == 0:
+        return ''
+    return plate_text[0]
 
 def receive_image(data: bytes):
     processing_id, plate_id, frame_number, frame, bbox, label = deserialize(data.value)
@@ -99,8 +101,9 @@ def receive_image(data: bytes):
     
     if positions1 == [] or positions2 == []:
         return
-    [plate_1_text, _] = chars_recognition(plate_1, label, positions1, True)
-    [plate_2_text, _] = chars_recognition(plate_2, label, positions2, False)
+    plate_1_text = chars_recognition(plate_1, label, positions1, True)
+
+    plate_2_text = chars_recognition(plate_2, label, positions2, False)
 
     plate_content = plate_1_text + '-' + plate_2_text
     print(plate_content)
