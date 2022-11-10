@@ -10,8 +10,8 @@ from kafka_lib import consumer as kafka_lib_consumer
 from src import consumer as src_consumer
 
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
-# KAFKA_CONSUMER_TOPIC = os.environ.get('KAFKA_CONSUMER_TOPIC', default='plates_text') # plate text
-KAFKA_CONSUMER_TOPIC = os.environ.get('KAFKA_CONSUMER_TOPIC', default='plates') # plate
+KAFKA_CONSUMER_TOPIC = os.environ.get('KAFKA_CONSUMER_TOPIC', default='plates_text') # plate text
+# KAFKA_CONSUMER_TOPIC = os.environ.get('KAFKA_CONSUMER_TOPIC', default='plates') # plate
 # KAFKA_CONSUMER_TOPIC = os.environ.get('KAFKA_CONSUMER_TOPIC', default='motorcycles') # motor
 KAFKA_CONSUMER_PARTITIONS = int(os.environ.get('KAFKA_CONSUMER_PARTITIONS', default='1'))
 
