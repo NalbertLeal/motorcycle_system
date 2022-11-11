@@ -1,0 +1,29 @@
+FROM python:3.10.4-slim
+WORKDIR app/
+RUN mkdir medias_folder
+
+COPY projects/plate_characters_detector .
+COPY utils/protobuf/py/ ../protobuf/py/
+COPY libs/kafka_lib/ ../libs/kafka_lib/
+COPY libs/mongodb_lib/ ../libs/mongodb_lib/
+COPY libs/image_processing_lib ../libs/image_processing_lib
+COPY libs/onnx_lib ../libs/onnx_lib
+
+# install opencv
+# RUN apt-get update && apt-get install -y python3-opencv
+# clean apt cache
+RUN apt install -y
+RUN rm -rf /var/lib/apt/lists/* 
+RUN apt purge   --auto-remove 
+RUN apt clean
+
+RUN pip install -r requirements.txt
+
+ENV KAFKA_HOST="kafka:29092"
+ENV MONGO_HOST="mongodb"
+ENV MONGO_PORT="27017"
+ENV MONGO_USER="root"
+ENV MONGO_PASS="231564"
+
+EXPOSE 8080/tcp
+CMD python3 main.py

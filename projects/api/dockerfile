@@ -8,7 +8,7 @@ COPY libs/kafka_lib/ ../libs/kafka_lib/
 COPY libs/mongodb_lib/ ../libs/mongodb_lib/
 
 # install opencv
-RUN apt-get update && apt-get install -y python3-opencv
+# RUN apt-get update && apt-get install -y python3-opencv
 # clean apt cache
 RUN apt install -y
 RUN rm -rf /var/lib/apt/lists/* 
