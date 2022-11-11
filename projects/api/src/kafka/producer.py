@@ -5,6 +5,7 @@ import time
 
 import cv2
 
+from mongodb_lib import connection, collection, change
 from kafka_lib import producer as kafka_lib_producer
 from image_processing_lib import image_formats
 import frame_pb2 as frame_pb
@@ -12,6 +13,30 @@ import frame_pb2 as frame_pb
 from src.utils import file
 
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
+MONGO_HOST = os.environ.get('MONGO_HOST', default='localhost')
+MONGO_PORT = os.environ.get('MONGO_PORT', default='27017')
+MONGO_USER = os.environ.get('MONGO_USER', default='root')
+MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
+
+CONN = connection.create_connection(
+    MONGO_HOST,
+    MONGO_PORT,
+    MONGO_USER,
+    MONGO_PASS
+)
+
+def create_frame_counter(frame_number):
+    frames_counter_coll = collection.access_collection(
+        CONN,
+        'motor_detection_system',
+        'frames_counter'
+    )
+    new_frame = {
+        'frame_number': frame_number,
+        'start_processing_date': datetime.now(),
+        'end_processing_date': datetime.now(),
+    }
+    change.insert_one(frames_counter_coll, new_frame)
 
 def _serialize_image(data) -> bytes:
     processing_id, frame, frame_number = data
@@ -45,6 +70,7 @@ def _thread_send_video(file_path: str, processing_id: str):
         (frame, frame_counter, _) = video_data
         data = processing_id, frame, frame_counter
         _send_frame(kafka_producer, data)
+        create_frame_counter(frame_counter)
 
 def send_video(file_path: str, processing_id: str):
     t = Thread(target=_thread_send_video, args=[file_path, processing_id])

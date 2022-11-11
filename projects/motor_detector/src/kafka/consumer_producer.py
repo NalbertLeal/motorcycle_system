@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from typing import Tuple
 
@@ -33,6 +34,17 @@ mongo_connection = connection.create_connection(
     MONGO_PASS
 )
 
+def update_frame_counter(frame_number):
+    frames_counter_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'frames_counter'
+    )
+    frames_counter_coll.update_one(
+        { "frame_number": frame_number },
+        { "$set": { "end_processing_date": datetime.now() } }
+    )
+
 def _serialize_image(data) -> bytes:
     processing_id, motorcycle_id, box, frame, frame_number = data
     message = frames_pb.Motorcycle()
@@ -63,13 +75,16 @@ def _deserialize_image(data) -> Tuple[bytes, str, int]:
     return message.processing_id, message.frame.frame_number, frame
 
 def consume_frames(data):
+    print('ok1')
     value = data.value
     processing_id, frame_number, frame = _deserialize_image(value)
 
+    print('ok2')
     onnx_frame = onnx.preprocess_image_to_onnx(frame, True)
     bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame)
     bboxes = np.array(bboxes)
 
+    print('ok3')
     # pros processing to get bounding box
     for box in bboxes:
         [x, y, w, h, confidence, label] = box
@@ -78,6 +93,7 @@ def consume_frames(data):
         xmax = int(w)
         ymax = int(h)
 
+        print('ok4')
         coords = [xmin, ymin, xmax, ymax]
         invalid_coord = any(list(filter(lambda x: x < 0 or x >= 640, coords)))
         if invalid_coord:
@@ -97,6 +113,11 @@ def consume_frames(data):
         ok, motorcycle_id = change.insert_one(motorcycles_coll, new_processing)
         if not ok:
             continue
+        # frame counter
+        print('ok5')
+        update_frame_counter(frame_number)
+        print('ok6')
         # send to kafka
         data = processing_id, motorcycle_id, np.array(coords), frame, frame_number
         _send_frame(kafka_producer, data)
+        print('ok7')

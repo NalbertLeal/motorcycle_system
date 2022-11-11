@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from typing import Tuple
 
@@ -34,6 +35,17 @@ mongo_connection = connection.create_connection(
     MONGO_USER,
     MONGO_PASS
 )
+
+def update_frame_counter(frame_number):
+    frames_counter_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'frames_counter'
+    )
+    frames_counter_coll.update_one(
+        { "frame_number": frame_number },
+        { "$set": { "end_processing_date": datetime.now() } }
+    )
 
 def _serialize_image(data) -> bytes:
     processing_id, plate_id, box, label, frame, frame_number = data
@@ -151,6 +163,8 @@ def consume_frames(data):
         )
         if plate_id is None:
             continue
+        # frame counter
+        update_frame_counter(frame_number)
         # frame resize
         resized_frame = image_matrix.resizeAndPad(motorcycle_frame)
         data = processing_id, plate_id, np.array(coords), str_label,\
