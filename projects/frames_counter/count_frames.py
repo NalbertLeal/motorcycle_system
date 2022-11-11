@@ -5,7 +5,6 @@ import os
 
 import pymongo
 
-from kafka_lib import consumer as kafka_lib_consumer
 from mongodb_lib import connection, collection
 
 MONGO_HOST = os.environ.get('MONGO_HOST', default='localhost')
@@ -21,14 +20,27 @@ mongo_connection = connection.create_connection(
 )
 
 frames_counter_coll = collection.access_collection(
-    mongo_connection,
-    'motor_detection_system',
-    'frames_collection'
+  mongo_connection,
+  'motor_detection_system',
+  'frames_counter'
 )
 
-all_dates = frames_counter_coll.find(...).sort([
+sorted_by_start = frames_counter_coll.find({}).sort([
   ('end_processing_date', pymongo.ASCENDING),
 ])
+sorted_by_start = list(sorted_by_start)
 
-result = all_dates[1] - all_dates[0]
+sorted_by_end = frames_counter_coll.find({}).sort([
+  ('start_processing_date', pymongo.DESCENDING),
+])
+sorted_by_end = list(sorted_by_end)
+
+procesing_start = sorted_by_start[0]
+procesing_end = sorted_by_end[0]
+
+print(procesing_start)
+print('')
+print(procesing_end)
+
+result = procesing_end - procesing_start
 print(result)
