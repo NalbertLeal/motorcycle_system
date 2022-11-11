@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from typing import Tuple
 
@@ -7,9 +8,11 @@ import cv2
 from image_processing_lib import image_formats
 from kafka_lib import consumer as lib_consumer
 from kafka_lib import producer as kafka_lib_producer
+from mongodb_lib import connection, collection, change
 import frames_pb2 as frames_pb
 from src.nn.recognition import CharactersRecognition
 from src.nn.segmentation import CharactersSegmentation
+from src.database import new_plate_content
 
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
 KAFKA_PRODUCER_TOPIC = os.environ.get('KAFKA_PRODUCER_TOPIC', default='plates_text')
@@ -24,6 +27,26 @@ kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_PRODUCER_TOPIC],
     KAFKA_PRODUCER_PARTITIONS
 )
+
+mongo_connection = connection.create_connection(
+    MONGO_HOST,
+    MONGO_PORT,
+    MONGO_USER,
+    MONGO_PASS
+)
+
+def update_frame_counter(frame_number):
+    print(frame_number)
+    frames_counter_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'frames_counter'
+    )
+    frames_counter_coll.update_one(
+        {"frame_number": frame_number},
+        {"$set": { "end_processing_date": datetime.now() } }
+    )
+    print(frame_number)
 
 def _serialize_image(data) -> bytes:
     processing_id, plate_id, box, label, plate_content, frame, frame_number = data
@@ -90,6 +113,31 @@ def chars_recognition(plate_img, label, positions, is_fst_half):
         return ''
     return plate_text[0]
 
+def save_at_mongodb(
+        processing_id,
+        plate_id,
+        frame_number,
+        content
+    ):
+    print('ok1')
+    plates_content_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'plates_content'
+    )
+    print('ok2')
+    plate_content_dict = new_plate_content.new_plate_content(
+        processing_id,
+        plate_id,
+        frame_number,
+        content
+    )
+    print('ok3')
+    ok, mongo_id = change.insert_one(plates_content_coll, plate_content_dict)
+    if not ok:
+        return None
+    return mongo_id
+
 def receive_image(data: bytes):
     processing_id, plate_id, frame_number, frame, bbox, label = deserialize(data.value)
     
@@ -106,9 +154,12 @@ def receive_image(data: bytes):
     plate_2_text = chars_recognition(plate_2, label, positions2, False)
 
     plate_content = plate_1_text + '-' + plate_2_text
-    print(plate_content)
+    # print(plate_content)
+
+    # save result in mongodb
+    save_at_mongodb(processing_id, plate_id, frame_number, plate_content)
+    # frame counter
+    update_frame_counter(frame_number)
 
     data = processing_id, plate_id, bbox, label, plate_content, frame, frame_number
     _send_frame(kafka_producer, data)
-
-    # send recognition result to database
