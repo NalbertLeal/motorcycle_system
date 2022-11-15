@@ -23,7 +23,7 @@ MONGO_PORT = os.environ.get('MONGO_PORT', default='27017')
 MONGO_USER = os.environ.get('MONGO_USER', default='root')
 MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
 
-yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m_v4.onnx', 'cpu')
+yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m_v4.onnx', 'gpu')
 kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_HOST],
     [KAFKA_PRODUCER_TOPIC],
