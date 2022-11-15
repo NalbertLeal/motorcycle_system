@@ -21,7 +21,7 @@ MONGO_PORT = os.environ.get('MONGO_PORT', default='27017')
 MONGO_USER = os.environ.get('MONGO_USER', default='root')
 MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
 
-yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m.onnx', 'cpu')
+yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m.onnx', 'gpu')
 kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_HOST],
     [KAFKA_PRODUCER_TOPIC],
@@ -75,16 +75,13 @@ def _deserialize_image(data) -> Tuple[bytes, str, int]:
     return message.processing_id, message.frame.frame_number, frame
 
 def consume_frames(data):
-    print('ok1')
     value = data.value
     processing_id, frame_number, frame = _deserialize_image(value)
 
-    print('ok2')
     onnx_frame = onnx.preprocess_image_to_onnx(frame, True)
     bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame)
     bboxes = np.array(bboxes)
 
-    print('ok3')
     # pros processing to get bounding box
     for box in bboxes:
         [x, y, w, h, confidence, label] = box
@@ -93,7 +90,6 @@ def consume_frames(data):
         xmax = int(w)
         ymax = int(h)
 
-        print('ok4')
         coords = [xmin, ymin, xmax, ymax]
         invalid_coord = any(list(filter(lambda x: x < 0 or x >= 640, coords)))
         if invalid_coord:
@@ -114,10 +110,8 @@ def consume_frames(data):
         if not ok:
             continue
         # frame counter
-        print('ok5')
         update_frame_counter(frame_number)
-        print('ok6')
         # send to kafka
         data = processing_id, motorcycle_id, np.array(coords), frame, frame_number
         _send_frame(kafka_producer, data)
-        print('ok7')
+        print(frame_number)
