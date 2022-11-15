@@ -1,6 +1,6 @@
 build:
-	@docker build -t nalbertgml/alpr-api:1.0.0 -f dockerfile ../..
+	@sudo docker build -t nalbertgml/api_alpr:latest -f dockerfile ../..
 run:
-	@docker run -d --name medias-api -p 8080:8080 nalbertgml/alpr-api:1.0.0
+	@sudo docker run -d --name api-alpr -p 8080:8080 nalbertgml/api_alpr:latest
 stop:
-	@docker stop medias-api
+	@sudo docker stop api-alpr

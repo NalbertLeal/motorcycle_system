@@ -3,9 +3,10 @@ WORKDIR app/
 RUN mkdir medias_folder
 
 COPY projects/api .
-COPY utils/protobuf/py/ ../protobuf/py/
+COPY libs/image_processing_lib/ ../libs/image_processing_lib/
 COPY libs/kafka_lib/ ../libs/kafka_lib/
 COPY libs/mongodb_lib/ ../libs/mongodb_lib/
+COPY utils/protobuf/py/ .
 
 # install opencv
 # RUN apt-get update && apt-get install -y python3-opencv
