@@ -27,20 +27,21 @@ frames_counter_coll = collection.access_collection(
 
 sorted_by_start = frames_counter_coll.find({}).sort([
   ('end_processing_date', pymongo.ASCENDING),
-])
-sorted_by_start = list(sorted_by_start)
+]).limit(1)
+sorted_by_start = list(sorted_by_start)[0]
 
 sorted_by_end = frames_counter_coll.find({}).sort([
   ('start_processing_date', pymongo.DESCENDING),
-])
-sorted_by_end = list(sorted_by_end)
+]).limit(1)
+sorted_by_end = list(sorted_by_end)[0]
 
-procesing_start = sorted_by_start[0]
-procesing_end = sorted_by_end[0]
+# procesing_start = sorted_by_start[0]
+# procesing_end = sorted_by_end[0]
 
-print(procesing_start)
+print(sorted_by_start)
 print('')
-print(procesing_end)
+print(sorted_by_end)
+print('')
 
-result = procesing_end - procesing_start
+result = sorted_by_end['end_processing_date'] - sorted_by_start['end_processing_date']
 print(result)
