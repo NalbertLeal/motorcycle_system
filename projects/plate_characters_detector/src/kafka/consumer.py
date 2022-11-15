@@ -12,6 +12,7 @@ from mongodb_lib import connection, collection, change
 import frames_pb2 as frames_pb
 from src.nn.recognition import CharactersRecognition
 from src.nn.segmentation import CharactersSegmentation
+from src.nn.segmentation_gpu import CharactersSegmentationGPU
 from src.database import new_plate_content
 
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
@@ -21,6 +22,7 @@ MONGO_HOST = os.environ.get('MONGO_HOST', default='localhost')
 MONGO_PORT = os.environ.get('MONGO_PORT', default='27017')
 MONGO_USER = os.environ.get('MONGO_USER', default='root')
 MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
+USE_GPU = int(os.environ.get('USE_GPU', default='0'))
 
 kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_HOST],
@@ -92,8 +94,6 @@ def plate_img_segmentation(plate_img):
     (h, w, _) = bin_img.shape
     plate_1 = np.copy(bin_img[:h//2])
     plate_2 = np.copy(bin_img[h//2:])
-
-    # segmentation
     seg = CharactersSegmentation()
     (positions1, seg_conf1) = seg.run(plate_1)
     seg = CharactersSegmentation()
@@ -119,20 +119,17 @@ def save_at_mongodb(
         frame_number,
         content
     ):
-    print('ok1')
     plates_content_coll = collection.access_collection(
         mongo_connection,
         'motor_detection_system',
         'plates_content'
     )
-    print('ok2')
     plate_content_dict = new_plate_content.new_plate_content(
         processing_id,
         plate_id,
         frame_number,
         content
     )
-    print('ok3')
     ok, mongo_id = change.insert_one(plates_content_coll, plate_content_dict)
     if not ok:
         return None

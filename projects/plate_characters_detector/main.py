@@ -1,9 +1,9 @@
 import os
 import sys
-sys.path.append('../../libs/image_processing_lib')
-sys.path.append('../../libs/kafka_lib')
-sys.path.append('../../libs/mongodb_lib')
-sys.path.append('../../utils/protobuf/py/')
+sys.path.append('../libs/image_processing_lib')
+sys.path.append('../libs/kafka_lib')
+sys.path.append('../libs/mongodb_lib')
+sys.path.append('../utils/protobuf/py/')
 
 from kafka_lib import consumer as lib_consumer
 

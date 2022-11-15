@@ -13,6 +13,10 @@ class CharactersSegmentation():
             SEGMENTATION_CFG,
             SEGMENTATION_WEIGHTS
         )
+        # self.seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+        # self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+
         self.confidence_threshold = 0.3
         self.nms_threshold = 0.1                   
         self.seg_classes = ["segmento"]
