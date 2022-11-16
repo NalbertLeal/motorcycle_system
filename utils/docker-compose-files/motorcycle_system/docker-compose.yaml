@@ -63,6 +63,99 @@ services:
     volumes:
       - ./mongo/volume/data/:/data/db
       - ./mongo/config/mongod.conf.orig:/etc/mongod.conf.orig
+  api:
+    image: nalbertgml/api_alpr:latest
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - mongodb
+    ports:
+      - 8080:8080
+    environment:
+      KAFKA_HOST: kafka:29092
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+  motorcycles_detector1:
+    image: nalbertgml/motor_detector:latest
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_HOST: kafka:29092
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: 231564
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+    deploy:
+      #mode: replicated
+      #replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  motor_plates_detector:
+    image: nalbertgml/motor_plates_detector:latest
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_HOST: kafka:29092
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: 231564
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+    deploy:
+      #mode: replicated
+      #replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  plate_content:
+    image: nalbertgml/plate_content:latest
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_HOST: kafka:29092
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: 231564
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+    deploy:
+      #mode: replicated
+      #replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 networks:
   somenet:
     driver: bridge
