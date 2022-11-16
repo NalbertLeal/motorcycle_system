@@ -38,7 +38,7 @@ mongo_connection = connection.create_connection(
 )
 
 def update_frame_counter(frame_number):
-    print(frame_number)
+    # print(frame_number)
     frames_counter_coll = collection.access_collection(
         mongo_connection,
         'motor_detection_system',
@@ -48,7 +48,7 @@ def update_frame_counter(frame_number):
         {"frame_number": frame_number},
         {"$set": { "end_processing_date": datetime.now() } }
     )
-    print(frame_number)
+    # print(frame_number)
 
 def _serialize_image(data) -> bytes:
     processing_id, plate_id, box, label, plate_content, frame, frame_number = data
@@ -94,6 +94,7 @@ def plate_img_segmentation(plate_img):
     (h, w, _) = bin_img.shape
     plate_1 = np.copy(bin_img[:h//2])
     plate_2 = np.copy(bin_img[h//2:])
+
     seg = CharactersSegmentation()
     (positions1, seg_conf1) = seg.run(plate_1)
     seg = CharactersSegmentation()

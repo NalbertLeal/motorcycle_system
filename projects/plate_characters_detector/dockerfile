@@ -1,6 +1,8 @@
-FROM python:3.10.4-slim
+# FROM python:3.10.4-slim
 # FROM nalbertgml/cuda-10.2-cudnn8-devel-ubuntu18.04-opencv-4.5.4:latest
+# docker run --name some-opencv --volume /home/nalbertgml/plate_content_service:/usr/code --network host --gpus all -it nalbertgml/opencv:latest bash
 # FROM nalbertgml/opencv:4.6.0-cc8.6-cuda11.7.0-cudnn8-runtime-ubuntu20.04
+FROM nalbertgml/opencv:latest
 WORKDIR app/
 
 COPY projects/plate_characters_detector/ .
@@ -20,7 +22,7 @@ ENV PYTHONUNBUFFERED 1
 # RUN apt update && \
 #     apt install --no-install-recommends -y python3.8 python3-pip python3.8-dev
 # install opencv
-RUN apt-get update && apt-get install -y python3-opencv
+# RUN apt-get update && apt-get install -y python3-opencv
 # clean apt cache
 RUN apt install -y
 RUN rm -rf /var/lib/apt/lists/* 
@@ -35,6 +37,7 @@ ENV MONGO_HOST mongodb
 ENV MONGO_PORT 27017
 ENV MONGO_USER root
 ENV MONGO_PASS 231564
+ENV OPENCV_DNN_OPENCL_ALLOW_ALL_DEVICES 1
 # dont use gpu, it's broken
 #ENV USE_GPU 0
 

@@ -23,23 +23,31 @@ class_new_numb_wei = "./nn_weights/recognition/2_gabo_newNum_60000.weights"
 class CharactersRecognition():
   def __init__(self):
     self.class_old_lett = cv2.dnn.readNetFromDarknet(class_old_lett_cfg, class_old_lett_wei)
-    # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
     # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     self.class_old_numb = cv2.dnn.readNetFromDarknet(class_old_numb_cfg, class_old_numb_wei)
-    # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
     # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     self.class_new_lett = cv2.dnn.readNetFromDarknet(class_new_lett_cfg, class_new_lett_wei)
-    # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
     # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     self.class_new_numb = cv2.dnn.readNetFromDarknet(class_new_numb_cfg, class_new_numb_wei)
-    # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
     # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
   def getOutputsNames(self, net):
