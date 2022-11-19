@@ -18,10 +18,16 @@ COPY libs/onnx_lib ../libs/onnx_lib
 
 RUN pip install -r requirements.txt
 
+# kafka
 ENV KAFKA_HOST="kafka:29092"
+# mongo
 ENV MONGO_HOST="mongodb"
 ENV MONGO_PORT="27017"
 ENV MONGO_USER="root"
 ENV MONGO_PASS="231564"
+# model
+ENV MODEL_PATH ./onnx_weights/yolov5m_v4_fp16.onnx
+ENV CPU_GPU gpu
+ENV MODEL_IS_FP16 1
 
 CMD python3 main.py

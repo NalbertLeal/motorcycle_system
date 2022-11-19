@@ -13,17 +13,23 @@ import frames_pb2 as frames_pb
 
 from src.database import motorcycle_plate
 
-YOLOv5_IMAGE_HEIGHT = 640
-YOLOv5_IMAGE_WIDTH = 640
+# kafka envs
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
 KAFKA_PRODUCER_TOPIC = os.environ.get('KAFKA_PRODUCER_TOPIC', default='plates')
 KAFKA_PRODUCER_PARTITIONS = int(os.environ.get('KAFKA_PRODUCER_PARTITIONS', default=1))
+# mongo envs
 MONGO_HOST = os.environ.get('MONGO_HOST', default='localhost')
 MONGO_PORT = os.environ.get('MONGO_PORT', default='27017')
 MONGO_USER = os.environ.get('MONGO_USER', default='root')
 MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
+# model envs
+YOLOv5_IMAGE_HEIGHT = 640
+YOLOv5_IMAGE_WIDTH = 640
+MODEL_PATH = os.environ.get('MODEL_PATH', default='./onnx_weights/yolov5m_v4.onnx')
+CPU_GPU = os.environ.get('CPU_GPU', default='cpu')
+MODEL_IS_FP16 = bool(os.environ.get('MODEL_IS_FP16', default=0))
 
-yolo_v5_onnx_model = model.new_YOLOv5Onnx('./onnx_weights/yolov5m_v4.onnx', 'gpu')
+yolo_v5_onnx_model = model.new_YOLOv5Onnx(MODEL_PATH, CPU_GPU)
 kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_HOST],
     [KAFKA_PRODUCER_TOPIC],
@@ -139,8 +145,14 @@ def consume_frames(data):
     resized_frame = image_matrix.resizeAndPad(frame)
     motorcycle_frame = resized_frame[y:h, x:w]
 
+    model_fp = None
+    if MODEL_IS_FP16:
+        model_fp = np.float16
+    else:
+        model_fp = np.float32
+
     # inference
-    onnx_frame = onnx.preprocess_image_to_onnx(motorcycle_frame, True)
+    onnx_frame = onnx.preprocess_image_to_onnx(motorcycle_frame, True, model_fp)
     bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame)
     bboxes = np.array(bboxes)
 
