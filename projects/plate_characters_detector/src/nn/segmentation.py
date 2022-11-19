@@ -4,19 +4,20 @@ import numpy as np
 
 import cv2
 
-SEGMENTATION_CFG = './nn_weights/segmentation/yolov4-tiny-ufpr-ufrnv178-prf-224x64_v9.cfg'
-SEGMENTATION_WEIGHTS = './nn_weights/segmentation/yolov4-tiny-ufpr-ufrnv178-prf-224x64_best_v9.weights'
+# SEGMENTATION_CFG = './nn_weights/segmentation/yolov4-tiny-ufpr-ufrnv178-prf-224x64_v9.cfg'
+# SEGMENTATION_WEIGHTS = './nn_weights/segmentation/yolov4-tiny-ufpr-ufrnv178-prf-224x64_best_v9.weights'
 
 class CharactersSegmentation():
-    def __init__(self) -> None:
-        self.seg_net = cv2.dnn.readNetFromDarknet(
-            SEGMENTATION_CFG,
-            SEGMENTATION_WEIGHTS
-        )
-        # self.seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-        # self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-        self.seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    def __init__(self, seg_net) -> None:
+        self.seg_net = seg_net
+        # self.seg_net = cv2.dnn.readNetFromDarknet(
+        #     SEGMENTATION_CFG,
+        #     SEGMENTATION_WEIGHTS
+        # )
+        # # self.seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        # # self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+        # self.seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
         # self.seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
         self.confidence_threshold = 0.3

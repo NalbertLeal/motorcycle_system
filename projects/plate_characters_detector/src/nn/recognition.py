@@ -4,51 +4,55 @@ import numpy as np
 
 import cv2
 
-# Letter - old
-class_old_lett_cfg = "./nn_weights/recognition/9_gabo_oldLet.cfg"
-class_old_lett_wei = "./nn_weights/recognition/9_gabo_oldLet_80000.weights"
+# # Letter - old
+# class_old_lett_cfg = "./nn_weights/recognition/9_gabo_oldLet.cfg"
+# class_old_lett_wei = "./nn_weights/recognition/9_gabo_oldLet_80000.weights"
 
-# Number - old
-class_old_numb_cfg = "./nn_weights/recognition/3_gabo_oldNum.cfg"
-class_old_numb_wei = "./nn_weights/recognition/3_gabo_oldNum.weights" #100000
+# # Number - old
+# class_old_numb_cfg = "./nn_weights/recognition/3_gabo_oldNum.cfg"
+# class_old_numb_wei = "./nn_weights/recognition/3_gabo_oldNum.weights" #100000
 
-# Letter - new
-class_new_lett_cfg = "./nn_weights/recognition/3_gabo_newLet.cfg"
-class_new_lett_wei = "./nn_weights/recognition/3_gabo_newLet_40000.weights"
+# # Letter - new
+# class_new_lett_cfg = "./nn_weights/recognition/3_gabo_newLet.cfg"
+# class_new_lett_wei = "./nn_weights/recognition/3_gabo_newLet_40000.weights"
 
-# Number - new
-class_new_numb_cfg = "./nn_weights/recognition/2_gabo_newNum.cfg"
-class_new_numb_wei = "./nn_weights/recognition/2_gabo_newNum_60000.weights"  
+# # Number - new
+# class_new_numb_cfg = "./nn_weights/recognition/2_gabo_newNum.cfg"
+# class_new_numb_wei = "./nn_weights/recognition/2_gabo_newNum_60000.weights"  
 
 class CharactersRecognition():
-  def __init__(self):
-    self.class_old_lett = cv2.dnn.readNetFromDarknet(class_old_lett_cfg, class_old_lett_wei)
-    # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+  def __init__(self, class_old_lett, class_old_numb, class_new_lett, class_new_numb):
+    self.class_old_lett = class_old_lett
+    self.class_old_numb = class_old_numb
+    self.class_new_lett = class_new_lett
+    self.class_new_numb = class_new_numb
+    # self.class_old_lett = cv2.dnn.readNetFromDarknet(class_old_lett_cfg, class_old_lett_wei)
+    # # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-    self.class_old_numb = cv2.dnn.readNetFromDarknet(class_old_numb_cfg, class_old_numb_wei)
-    # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    # self.class_old_numb = cv2.dnn.readNetFromDarknet(class_old_numb_cfg, class_old_numb_wei)
+    # # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-    self.class_new_lett = cv2.dnn.readNetFromDarknet(class_new_lett_cfg, class_new_lett_wei)
-    # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    # self.class_new_lett = cv2.dnn.readNetFromDarknet(class_new_lett_cfg, class_new_lett_wei)
+    # # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-    self.class_new_numb = cv2.dnn.readNetFromDarknet(class_new_numb_cfg, class_new_numb_wei)
-    # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    # self.class_new_numb = cv2.dnn.readNetFromDarknet(class_new_numb_cfg, class_new_numb_wei)
+    # # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
+    # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    # # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
   def getOutputsNames(self, net):
     layersNames = net.getLayerNames()
