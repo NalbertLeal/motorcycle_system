@@ -153,7 +153,7 @@ def consume_frames(data):
 
     # inference
     onnx_frame = onnx.preprocess_image_to_onnx(motorcycle_frame, True, model_fp)
-    bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame)
+    bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame, conf_thres=0.8, iou_thres=0.1)
     bboxes = np.array(bboxes)
 
     # pros processing to get bounding box
