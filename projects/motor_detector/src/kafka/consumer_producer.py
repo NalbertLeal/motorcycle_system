@@ -93,7 +93,7 @@ def consume_frames(data):
         model_fp = np.float32
 
     onnx_frame = onnx.preprocess_image_to_onnx(frame, True, model_fp)
-    bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame)
+    bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame, conf_thres=0.6)
     bboxes = np.array(bboxes)
 
     # pros processing to get bounding box
