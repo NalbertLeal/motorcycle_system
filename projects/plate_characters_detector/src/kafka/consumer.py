@@ -254,6 +254,17 @@ def receive_image(data: bytes):
     plate_1, positions1, seg_conf1, plate_2, positions2, seg_conf2, pre_processing_time, segmentation_time = plate_img_segmentation(motorcycle_frame)
     
     if positions1 == [] or positions2 == []:
+        update_frame_counter(frame_number)
+        if is_metric_on:
+            new_metric = metric.new_metric(
+                frame_number,
+                frame_received_at,
+                pre_processing_time,
+                segmentation_time,
+                '0:00:00',
+                str(None),
+            )
+            save_metrics_in_mongo(new_metric)
         return
     plate_1_text, classification_time1 = chars_recognition(plate_1, label, positions1, True)
 
@@ -266,13 +277,14 @@ def receive_image(data: bytes):
 
     # save result in mongodb
     save_at_mongodb(processing_id, plate_id, frame_number, plate_content)
-    # frame counter
-    update_frame_counter(frame_number)
 
     data = processing_id, plate_id, bbox, label, plate_content, frame, frame_number
     frame_send_at = datetime.now()
     _send_frame(kafka_producer, data)
     
+    # frame counter
+    update_frame_counter(frame_number)
+    # metrics
     if is_metric_on:
         new_metric = metric.new_metric(
             frame_number,
