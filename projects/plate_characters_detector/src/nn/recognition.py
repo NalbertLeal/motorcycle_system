@@ -4,55 +4,12 @@ import numpy as np
 
 import cv2
 
-# # Letter - old
-# class_old_lett_cfg = "./nn_weights/recognition/9_gabo_oldLet.cfg"
-# class_old_lett_wei = "./nn_weights/recognition/9_gabo_oldLet_80000.weights"
-
-# # Number - old
-# class_old_numb_cfg = "./nn_weights/recognition/3_gabo_oldNum.cfg"
-# class_old_numb_wei = "./nn_weights/recognition/3_gabo_oldNum.weights" #100000
-
-# # Letter - new
-# class_new_lett_cfg = "./nn_weights/recognition/3_gabo_newLet.cfg"
-# class_new_lett_wei = "./nn_weights/recognition/3_gabo_newLet_40000.weights"
-
-# # Number - new
-# class_new_numb_cfg = "./nn_weights/recognition/2_gabo_newNum.cfg"
-# class_new_numb_wei = "./nn_weights/recognition/2_gabo_newNum_60000.weights"  
-
 class CharactersRecognition():
   def __init__(self, class_old_lett, class_old_numb, class_new_lett, class_new_numb):
     self.class_old_lett = class_old_lett
     self.class_old_numb = class_old_numb
     self.class_new_lett = class_new_lett
     self.class_new_numb = class_new_numb
-    # self.class_old_lett = cv2.dnn.readNetFromDarknet(class_old_lett_cfg, class_old_lett_wei)
-    # # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    # self.class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # # self.class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-
-    # self.class_old_numb = cv2.dnn.readNetFromDarknet(class_old_numb_cfg, class_old_numb_wei)
-    # # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    # self.class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # # self.class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-
-    # self.class_new_lett = cv2.dnn.readNetFromDarknet(class_new_lett_cfg, class_new_lett_wei)
-    # # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    # self.class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # # self.class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-
-    # self.class_new_numb = cv2.dnn.readNetFromDarknet(class_new_numb_cfg, class_new_numb_wei)
-    # # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    # # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_OPENCL_FP16)
-    # self.class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
-    # # self.class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
   def getOutputsNames(self, net):
     layersNames = net.getLayerNames()
@@ -134,11 +91,6 @@ class CharactersRecognition():
 
     letter_image = cv2.cvtColor(letter_image,cv2.COLOR_RGB2GRAY)       # por hora, a rede nao funciona com essa configuracao!
     letter_image = cv2.resize(letter_image,(inpWidth,inpHeight),interpolation=cv2.INTER_AREA) # depois, nao vai precisar disso 
-    #letter_image = self.morphological_letter(letter_image)   # morphological operation
-
-    # apply inversion if plate is red
-    # if letter_class == 'vermelha':
-    #   letter_image = np.invert(letter_image)
 
     # preparing image for insert at NN
     letter_image = cv2.cvtColor(letter_image, cv2.COLOR_GRAY2RGB)   # gambiarra pois a rede só aceita 3 canais
@@ -173,10 +125,6 @@ class CharactersRecognition():
 
     number_image = cv2.cvtColor(number_image,cv2.COLOR_BGR2GRAY)
     number_image = cv2.resize(number_image,(inpWidth,inpHeight),interpolation=cv2.INTER_AREA)
-
-    # apply inversion if plate is red
-    # if number_class == 'vermelha':
-    #   number_image = np.invert(number_image)
 
     # preparing image for insert at NN
     number_image = cv2.cvtColor(number_image, cv2.COLOR_GRAY2RGB)   # gambiarra pois a rede só aceita 3 canais
@@ -217,14 +165,6 @@ class CharactersRecognition():
             predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
             text.append(predicted_number)
             confidence.append(confidence_result)
-          # if pos in [0,1,2,4]:            # sequence of characters in the new class that are letters
-          #   predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
-          #   text.append(predicted_letter)
-          #   confidence.append(confidence_result)
-          # elif pos in [3,5,6]:
-          #   predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
-          #   text.append(predicted_number)
-          #   confidence.append(confidence_result)
         else:                               # old class (cinza or vermelha)
           if is_fst_half:
             predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
@@ -234,14 +174,6 @@ class CharactersRecognition():
             predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
             text.append(predicted_number)
             confidence.append(confidence_result)
-          # if pos in [0,1,2]:              # sequence of characters in the old class that are letters
-          #   predicted_letter, confidence_result = self.letter_recognition(char_image, plate_class)
-          #   text.append(predicted_letter)
-          #   confidence.append(confidence_result)
-          # elif pos in [3,4,5,6]:
-          #   predicted_number, confidence_result = self.number_recognition(char_image, plate_class)
-          #   text.append(predicted_number)
-          #   confidence.append(confidence_result)
         pos+=1
 
     else:                                           # number of chars is not seven

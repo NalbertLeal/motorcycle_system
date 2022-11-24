@@ -11,7 +11,7 @@ from onnx_lib import model
 from mongodb_lib import connection, collection, change
 import frames_pb2 as frames_pb
 
-from src.database import motorcycle_plate
+from src.database import motorcycle_plate, metric
 
 # kafka envs
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
@@ -28,6 +28,12 @@ YOLOv5_IMAGE_WIDTH = 640
 MODEL_PATH = os.environ.get('MODEL_PATH', default='./onnx_weights/yolov5m_v4.onnx')
 CPU_GPU = os.environ.get('CPU_GPU', default='cpu')
 MODEL_IS_FP16 = bool(os.environ.get('MODEL_IS_FP16', default=0))
+# metric env variable
+is_metric_on = bool(os.environ.get('IS_METRIC_ON', default=0))
+
+print(f'Using {CPU_GPU} as enviroment')
+if MODEL_IS_FP16:
+    print('Using float16 model')
 
 yolo_v5_onnx_model = model.new_YOLOv5Onnx(MODEL_PATH, CPU_GPU)
 kafka_producer = kafka_lib_producer.create_producer(
@@ -127,6 +133,17 @@ def save_at_mongodb(
         return None
     return plate_id
 
+def save_metrics_in_mongo(new_metric):
+    metrics_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'plate_metrics'
+    )
+    ok, plate_id = change.insert_one(metrics_coll, new_metric)
+    if not ok:
+        return None
+    return plate_id
+
 def label_to_string(label):
     int_label = int(label)
     if int_label == 0:
@@ -136,6 +153,10 @@ def label_to_string(label):
     return 'mercosul'
 
 def consume_frames(data):
+    # metric variables
+    frame_received_at = datetime.now()
+    frame_send_at = None
+
     value = data.value
     processing_id, motorcycle_id, frame_number,\
         frame, motor_bbox = _deserialize_image(value)
@@ -151,9 +172,16 @@ def consume_frames(data):
     else:
         model_fp = np.float32
 
-    # inference
+    # preprocessing
+    start_pre_processing_at = datetime.now()
     onnx_frame = onnx.preprocess_image_to_onnx(motorcycle_frame, True, model_fp)
+    end_pre_processing_at = datetime.now()
+    
+    # model detection
+    start_inference_at = datetime.now()
     bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame, conf_thres=0.8, iou_thres=0.1)
+    end_inference_at = datetime.now()
+
     bboxes = np.array(bboxes)
 
     # pros processing to get bounding box
@@ -181,35 +209,15 @@ def consume_frames(data):
         resized_frame = image_matrix.resizeAndPad(motorcycle_frame)
         data = processing_id, plate_id, np.array(coords), str_label,\
             resized_frame, frame_number
+        frame_send_at = datetime.now()
         _send_frame(kafka_producer, data)
-        # [x, y, w, h, confidence, label] = box
-        # xmin = int(x)
-        # ymin = int(y)
-        # xmax = int(w)
-        # ymax = int(h)
-
-        # coords = [xmin, ymin, xmax, ymax]
-        # invalid_coord = any(list(filter(lambda x: x < 0 or x >= 640, coords)))
-        # if invalid_coord:
-        #     break
-        # # send to mongodb
-        # motorcycles_plates_coll = collection.access_collection(
-        #     mongo_connection,
-        #     'motor_detection_system',
-        #     'motorcycles_plates'
-        # )
-        # motorcycle_plate_dict = motorcycle_plate.new_motorcycle_plate(
-        #     processing_id,
-        #     motorcycle_id,
-        #     frame_number,
-        #     ((xmin, xmax), (ymin, ymax)),
-        #     confidence
-        # )
-        # ok, plate_id = change.insert_one(motorcycles_plates_coll, motorcycle_plate_dict)
-        # if not ok:
-        #     raise BaseException(
-        #         'Error while saving into database frame ' + str(frame_number)
-        #     )
-        # # send to kafka
-        # data = processing_id, plate_id, np.array(coords), frame, frame_number
-        # _send_frame(kafka_producer, data)
+    
+    if is_metric_on:
+        new_metric = metric.new_metric(
+            frame_number, 
+            frame_received_at, 
+            end_pre_processing_at - start_pre_processing_at, 
+            end_inference_at - start_inference_at,  
+            frame_send_at
+        )
+        save_metrics_in_mongo(new_metric)

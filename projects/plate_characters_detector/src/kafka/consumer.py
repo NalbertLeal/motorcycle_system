@@ -10,9 +10,10 @@ from kafka_lib import consumer as lib_consumer
 from kafka_lib import producer as kafka_lib_producer
 from mongodb_lib import connection, collection, change
 import frames_pb2 as frames_pb
+
 from src.nn.recognition import CharactersRecognition
 from src.nn.segmentation import CharactersSegmentation
-from src.database import new_plate_content
+from src.database import new_plate_content, metric
 
 # kafka
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
@@ -25,6 +26,9 @@ MONGO_USER = os.environ.get('MONGO_USER', default='root')
 MONGO_PASS = os.environ.get('MONGO_PASS', default='231564')
 # Model
 USE_GPU = int(os.environ.get('USE_GPU', default='0'))
+MODEL_IS_FP16 = int(os.environ.get('MODEL_IS_FP16', default=1))
+# metric env variable
+is_metric_on = int(os.environ.get('IS_METRIC_ON', default=0))
 # Segmentation model
 SEGMENTATION_CFG = './nn_weights/segmentation/yolov4-tiny-ufpr-ufrnv178-prf-224x64_v9.cfg'
 SEGMENTATION_WEIGHTS = './nn_weights/segmentation/yolov4-tiny-ufpr-ufrnv178-prf-224x64_best_v9.weights'
@@ -39,7 +43,11 @@ class_new_lett_cfg = "./nn_weights/recognition/3_gabo_newLet.cfg"
 class_new_lett_wei = "./nn_weights/recognition/3_gabo_newLet_40000.weights"
 # Recognition Number - mercosul
 class_new_numb_cfg = "./nn_weights/recognition/2_gabo_newNum.cfg"
-class_new_numb_wei = "./nn_weights/recognition/2_gabo_newNum_60000.weights"  
+class_new_numb_wei = "./nn_weights/recognition/2_gabo_newNum_60000.weights" 
+
+print(f'Using GPU as enviroment: {bool(USE_GPU)}')
+if MODEL_IS_FP16:
+    print('Using float16 model') 
 
 kafka_producer = kafka_lib_producer.create_producer(
     [KAFKA_HOST],
@@ -56,28 +64,48 @@ mongo_connection = connection.create_connection(
 
 # Segment network
 seg_net = cv2.dnn.readNetFromDarknet(SEGMENTATION_CFG, SEGMENTATION_WEIGHTS)
-seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+if USE_GPU:
+    seg_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    if MODEL_IS_FP16:
+        seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    else:
+        seg_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 # Brazil letter recoognition
 class_old_lett = cv2.dnn.readNetFromDarknet(class_old_lett_cfg, class_old_lett_wei)
-class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+if USE_GPU:
+    class_old_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    if MODEL_IS_FP16:
+        class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    else:
+        class_old_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 # Brazil number recoognition
 class_old_numb = cv2.dnn.readNetFromDarknet(class_old_numb_cfg, class_old_numb_wei)
-class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+if USE_GPU:
+    class_old_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    if MODEL_IS_FP16:
+        class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    else:
+        class_old_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 # Mercosul letter recoognition
 class_new_lett = cv2.dnn.readNetFromDarknet(class_new_lett_cfg, class_new_lett_wei)
-class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+if USE_GPU:
+    class_new_lett.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    if MODEL_IS_FP16:
+        class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    else:
+        class_new_lett.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 # Mercosul number recoognition
 class_new_numb = cv2.dnn.readNetFromDarknet(class_new_numb_cfg, class_new_numb_wei)
-class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+if USE_GPU:
+    class_new_numb.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    if MODEL_IS_FP16:
+        class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+    else:
+        class_new_numb.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
 def update_frame_counter(frame_number):
     # print(frame_number)
@@ -127,6 +155,7 @@ def deserialize(data: bytes) -> Tuple:
         message.frame.frame_number, frame, bbox, message.bbox.label
 
 def plate_img_segmentation(plate_img):
+    start_pre_processing_at = datetime.now()
     # gray binarization
     gray_img = cv2.cvtColor(plate_img, cv2.COLOR_BGR2GRAY)
     gray_img = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2RGB)
@@ -137,14 +166,32 @@ def plate_img_segmentation(plate_img):
     plate_1 = np.copy(bin_img[:h//2])
     plate_2 = np.copy(bin_img[h//2:])
 
-    seg = CharactersSegmentation(seg_net)
-    (positions1, seg_conf1) = seg.run(plate_1)
-    seg = CharactersSegmentation(seg_net)
-    (positions2, seg_conf2) = seg.run(plate_2)
+    end_pre_processing_at = datetime.now()
 
-    return plate_1, positions1, seg_conf1, plate_2, positions2, seg_conf2
+    start_segmentation_time = datetime.now()
+    seg = CharactersSegmentation(seg_net)
+    (positions1, seg_conf1, start_preprocessing1_at, end_preprocessing1_at) = seg.run(plate_1)
+    seg = CharactersSegmentation(seg_net)
+    (positions2, seg_conf2, start_preprocessing_at2, end_preprocessing2_at) = seg.run(plate_2)
+    end_segmentation_time = datetime.now()
+
+    pre_processing_time = (end_pre_processing_at - start_pre_processing_at) +\
+        (end_preprocessing1_at - start_preprocessing1_at) +\
+        (end_preprocessing2_at - start_preprocessing_at2)
+
+    segmentation_time = end_segmentation_time - start_segmentation_time
+
+    return plate_1,\
+        positions1,\
+        seg_conf1,\
+        plate_2,\
+        positions2,\
+        seg_conf2,\
+        pre_processing_time,\
+        segmentation_time
 
 def chars_recognition(plate_img, label, positions, is_fst_half):
+    start_classification_time = datetime.now()
     rec = CharactersRecognition(class_old_lett, class_old_numb, class_new_lett, class_new_numb)
     (plate_text, plate_confidence) = rec.recognition(
         plate_img,
@@ -152,9 +199,13 @@ def chars_recognition(plate_img, label, positions, is_fst_half):
         positions,
         is_fst_half
     )
+    end_classification_time = datetime.now()
+
+    classification_time = end_classification_time - start_classification_time
+
     if len(plate_text) == 0:
-        return ''
-    return plate_text[0]
+        return '', classification_time
+    return plate_text[0], classification_time
 
 def save_at_mongodb(
         processing_id,
@@ -178,20 +229,37 @@ def save_at_mongodb(
         return None
     return mongo_id
 
+def save_metrics_in_mongo(new_metric):
+    metrics_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'plate_content_metrics'
+    )
+    ok, plate_id = change.insert_one(metrics_coll, new_metric)
+    if not ok:
+        return None
+    return plate_id
+
 def receive_image(data: bytes):
+    # metric variables
+    frame_received_at = datetime.now()
+    frame_send_at = None
+
     processing_id, plate_id, frame_number, frame, bbox, label = deserialize(data.value)
     
     # crop frame
     [x, y, w, h] = bbox
     motorcycle_frame = frame[y:h, x:w]
     
-    plate_1, positions1, seg_conf1, plate_2, positions2, seg_conf2 = plate_img_segmentation(motorcycle_frame)
+    plate_1, positions1, seg_conf1, plate_2, positions2, seg_conf2, pre_processing_time, segmentation_time = plate_img_segmentation(motorcycle_frame)
     
     if positions1 == [] or positions2 == []:
         return
-    plate_1_text = chars_recognition(plate_1, label, positions1, True)
+    plate_1_text, classification_time1 = chars_recognition(plate_1, label, positions1, True)
 
-    plate_2_text = chars_recognition(plate_2, label, positions2, False)
+    plate_2_text, classification_time2 = chars_recognition(plate_2, label, positions2, False)
+
+    classification_time = classification_time1 + classification_time2
 
     plate_content = plate_1_text + '-' + plate_2_text
     # print(plate_content)
@@ -202,4 +270,16 @@ def receive_image(data: bytes):
     update_frame_counter(frame_number)
 
     data = processing_id, plate_id, bbox, label, plate_content, frame, frame_number
+    frame_send_at = datetime.now()
     _send_frame(kafka_producer, data)
+    
+    if is_metric_on:
+        new_metric = metric.new_metric(
+            frame_number,
+            frame_received_at,
+            pre_processing_time,
+            segmentation_time,
+            classification_time,
+            frame_send_at,
+        )
+        save_metrics_in_mongo(new_metric)

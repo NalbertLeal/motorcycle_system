@@ -29,5 +29,7 @@ ENV MONGO_PASS="231564"
 ENV MODEL_PATH ./onnx_weights/yolov5m_v4_fp16.onnx
 ENV CPU_GPU gpu
 ENV MODEL_IS_FP16 1
+# metrics
+ENV IS_METRIC_ON 1
 
 CMD python3 main.py

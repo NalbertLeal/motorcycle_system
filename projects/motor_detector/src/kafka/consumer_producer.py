@@ -11,7 +11,7 @@ from onnx_lib import model
 from mongodb_lib import connection, collection, change
 import frames_pb2 as frames_pb
 
-from src.database import motorcycle
+from src.database import motorcycle, metric
 
 # kafka envs
 KAFKA_HOST = os.environ.get('KAFKA_HOST', default='localhost:9092')
@@ -27,7 +27,10 @@ YOLOv5_IMAGE_HEIGHT = 640
 YOLOv5_IMAGE_WIDTH = 640
 MODEL_PATH = os.environ.get('MODEL_PATH', default='./onnx_weights/yolov5m.onnx')
 CPU_GPU = os.environ.get('CPU_GPU', default='cpu')
-MODEL_IS_FP16 = bool(os.environ.get('MODEL_IS_FP16', default=0))
+MODEL_IS_FP16 = int(os.getenv('IS_METRIC_ON', 0)) #bool(os.environ.get('MODEL_IS_FP16', default=0))
+# metric env variable
+is_metric_on = int(os.environ.get('IS_METRIC_ON', default=0))
+# is_metric_on = int(os.getenv('IS_METRIC_ON', 0))
 
 yolo_v5_onnx_model = model.new_YOLOv5Onnx(MODEL_PATH, CPU_GPU)
 kafka_producer = kafka_lib_producer.create_producer(
@@ -82,7 +85,22 @@ def _deserialize_image(data) -> Tuple[bytes, str, int]:
         .reshape(message.frame.shape)
     return message.processing_id, message.frame.frame_number, frame
 
+def save_metrics_in_mongo(new_metric):
+    metrics_coll = collection.access_collection(
+        mongo_connection,
+        'motor_detection_system',
+        'motor_metrics'
+    )
+    ok, plate_id = change.insert_one(metrics_coll, new_metric)
+    if not ok:
+        return None
+    return plate_id
+
 def consume_frames(data):
+    # metric variables
+    frame_received_at = datetime.now()
+    frame_send_at = None
+
     value = data.value
     processing_id, frame_number, frame = _deserialize_image(value)
 
@@ -92,8 +110,16 @@ def consume_frames(data):
     else:
         model_fp = np.float32
 
+    # preprocessing
+    start_pre_processing_at = datetime.now()
     onnx_frame = onnx.preprocess_image_to_onnx(frame, True, model_fp)
+    end_pre_processing_at = datetime.now()
+
+    # model detection
+    start_inference_at = datetime.now()
     bboxes = model.run_model(yolo_v5_onnx_model, onnx_frame, conf_thres=0.6)
+    end_inference_at = datetime.now()
+
     bboxes = np.array(bboxes)
 
     # pros processing to get bounding box
@@ -127,5 +153,16 @@ def consume_frames(data):
         update_frame_counter(frame_number)
         # send to kafka
         data = processing_id, motorcycle_id, np.array(coords), frame, frame_number
+        frame_send_at = datetime.now()
+
         _send_frame(kafka_producer, data)
-        print(frame_number)
+    
+    if is_metric_on:
+        new_metric = metric.new_metric(
+            frame_number, 
+            frame_received_at, 
+            end_pre_processing_at - start_pre_processing_at, 
+            end_inference_at - start_inference_at,  
+            frame_send_at
+        )
+        save_metrics_in_mongo(new_metric)

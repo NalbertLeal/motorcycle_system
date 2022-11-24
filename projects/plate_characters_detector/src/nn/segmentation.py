@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 from typing import Tuple
 import numpy as np
@@ -118,7 +119,9 @@ class CharactersSegmentation():
     def run(self, img: np.ndarray, inpWidth: int=224,\
         inpHeight: int=64) -> Tuple[Tuple[int]]:
 
+        start_preprocessing_at = datetime.now()
         blob = self.image_to_blob(img, inpWidth, inpHeight)
+        end_preprocessing_at = datetime.now()
 
         output = self.segment_plate(blob)
         
@@ -131,10 +134,9 @@ class CharactersSegmentation():
         )
 
         if len(char_position) == 0:
-            return char_position, confidences_seg
+            return char_position, confidences_seg, start_preprocessing_at, end_preprocessing_at
         sorted_char_position = self.sort_char_position(char_position) # MOTO
         if sorted_char_position is None:
-            return [], confidences_seg
-        # sorted_char_position = sorted(char_position, key=lambda x: x[0]) # CARRO
+            return [], confidences_seg, start_preprocessing_at, end_preprocessing_at
 
-        return sorted_char_position, confidences_seg
+        return sorted_char_position, confidences_seg, start_preprocessing_at, end_preprocessing_at
