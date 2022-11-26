@@ -1,0 +1,164 @@
+version: "3"
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - somenet
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_MAX_PARTITION_FETCH_BYTES=30000000 # 3MB per client response
+      - KAFKA_CFG_MAX_REQUEST_SIZE=30000000 # 3MB per client request
+    volumes:
+      - /dev/shm/kafka:/bitnami/kafka
+      # - ./kafka/volume:/bitnami/kafka
+      # - ./volume/server.properties:/bitnami/kafka/config/server.properties
+      # - ./producer.properties:/bitnami/kafka/config/producer.properties
+    depends_on:
+      - zookeeper
+    networks:
+      - somenet
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --describe"]
+      start_period: 15s
+      interval: 20s
+      timeout: 20s
+      retries: 5
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - 19000:9000
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+    networks:
+      - somenet
+  mongodb:
+    hostname: mongodb
+    image: mongo:latest
+    container_name: mongodb
+    restart: unless-stopped
+    command: mongod --auth
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=231564
+      # - MONGO_INITDB_DATABASE=video_processing
+      - MONDODB_LOG_DIR=/dev/null
+    networks:
+      - somenet
+    ports:
+      - 27017:27017
+    volumes:
+      - /dev/shm/mongodb/data/:/data/db
+      - /dev/shm/mongodb/config/mongod.conf.orig:/etc/mongod.conf.orig
+      # - ./mongo/volume/data/:/data/db
+      # - ./mongo/config/mongod.conf.orig:/etc/mongod.conf.orig
+  api:
+    image: nalbertgml/api_alpr:latest
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - mongodb
+    ports:
+      - 8080:8080
+    environment:
+      KAFKA_HOST: kafka:29092
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+  motorcycles_detector1:
+    image: nalbertgml/motor_detector:latest
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_HOST: kafka:29092
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: 231564
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+    deploy:
+      #mode: replicated
+      #replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  motor_plates_detector:
+    image: nalbertgml/motor_plates_detector:latest
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_HOST: kafka:29092
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: 231564
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+    deploy:
+      #mode: replicated
+      #replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  plate_content:
+    image: nalbertgml/plate_content:latest
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_HOST: kafka:29092
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USER: root
+      MONGO_PASS: 231564
+    networks:
+      - somenet
+    links:
+     - kafka
+     - mongodb
+    deploy:
+      #mode: replicated
+      #replicas: 3
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+networks:
+  somenet:
+    driver: bridge
